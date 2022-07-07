@@ -169,7 +169,7 @@ GoOnLoadingFile:
   jmp GoOnLoadingFile
 
 FileLoaded:
-  jmp $
+  jmp BaseOfLoader:OffsetOfLoader
 
 ; read one sector from floppy
 ReadOneSector:
