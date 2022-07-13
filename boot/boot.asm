@@ -4,74 +4,48 @@ BaseOfStack equ 0x7c00
 BaseOfLoader equ 0x1000
 OffsetOfLoader equ 0x00
 
-RootDirSectors equ 14
-SectorNumOfRootDirStart equ 19
-SectorNumOfFAT1Start equ 1
-SectorBalance equ 17
+%include "boot/fat12.inc"
 
-; FAT12 Head
-jmp short LableStart
-nop
-BS_OEMName	db	'ANOSboot'
-BPB_BytesPerSec	dw	512
-BPB_SecPerClus	db	1
-BPB_RsvdSecCnt	dw	1
-BPB_NumFATs	db	2
-BPB_RootEntCnt	dw	224
-BPB_TotSec16	dw	2880
-BPB_Media	db	0xf0
-BPB_FATSz16	dw	9
-BPB_SecPerTrk	dw	18
-BPB_NumHeads	dw	2
-BPB_HiddSec	dd	0
-BPB_TotSec32	dd	0
-BS_DrvNum	db	0
-BS_Reserved1	db	0
-BS_BootSig	db	0x29
-BS_VolID	dd	0
-BS_VolLab	db	'boot loader'
-BS_FileSysType	db	'FAT12   '
+LabelStart:
+  ; init reg
+  mov ax, cs
+  mov ds, ax
+  mov es, ax
+  mov ss, ax
+  mov sp, BaseOfStack
 
-LableStart:
-; init reg
-mov ax, cs
-mov ds, ax
-mov es, ax
-mov ss, ax
-mov sp, BaseOfStack
+  ; clear screen
+  mov ax, 0x600
+  mov bx, 0x700
+  mov cx, 0x0
+  mov dx, 0x184f
+  int 0x10
 
-; clear screen
-mov ax, 0x600
-mov bx, 0x700
-mov cx, 0x0
-mov dx, 0x184f
-int 0x10
+  ; set focus
+  mov ax, 0x200
+  mov bx, 0x0
+  mov dx, 0x0
+  int 0x10
 
-; set focus
-mov ax, 0x200
-mov bx, 0x0
-mov dx, 0x0
-int 0x10
+  ; display on screen
+  mov ax, 0x1301
+  mov bx, 0xf
+  mov dx, 0x0
+  mov cx, 15
+  push ax
+  mov ax, ds
+  mov es, ax
+  pop ax
+  mov bp, StartBootText
+  int 0x10
 
-; display on screen
-mov ax, 0x1301
-mov bx, 0xf
-mov dx, 0x0
-mov cx, 15
-push ax
-mov ax, ds
-mov es, ax
-pop ax
-mov bp, StartBootText
-int 0x10
+  ; reset floppy
+  xor ah, ah
+  xor dl, dl
+  int 0x13
 
-; reset floppy
-xor ah, ah
-xor dl, dl
-int 0x13
-
-; search loader.bin
-mov word [SectorNo], SectorNumOfRootDirStart
+  ; search loader.bin
+  mov word [SectorNo], SectorNumOfRootDirStart
 
 SearchInRootDirBegin:
   cmp word [RootDirSizeForLoop], 0

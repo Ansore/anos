@@ -18,10 +18,11 @@ $(BUILD)/master.img: $(BUILD)/boot.bin \
 
 $(BUILD)/master-floppy.img: $(BUILD)/boot.bin \
 														$(BUILD)/loader.bin
-	# yes | bximage -q -fd=1.44M -func=create $@
+	yes | bximage -q -fd=1.44M -func=create $@
 	dd if=$(BUILD)/boot.bin of=$@ bs=512 count=1 conv=notrunc
 
-all: $(BUILD)/master-floppy.img
+test: $(BUILD)/boot.bin \
+										$(BUILD)/loader.bin
 
 clean:
 	rm -rf $(BUILD)
