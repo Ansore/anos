@@ -48,7 +48,7 @@ entry64:
   pushq %rax
   lretq
 
-.go_to_kernel:
+go_to_kernel:
   .quad start_kernel
 
 // init page
