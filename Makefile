@@ -16,18 +16,30 @@ $(BUILD_BOOT)/boot.bin: $(BOOT)/boot.asm
 $(BUILD_BOOT)/loader.bin: $(BOOT)/loader.asm
 	nasm -f bin $< -o $@
 
-$(BUILD_KERNEL)/header.o: $(BUILD_KERNEL)/header.S
+$(BUILD_KERNEL)/header.o: $(KERNEL)/header.S
 	gcc -E $< > $(BUILD_KERNEL)/header.tmp
 	as --64 -o $@ $(BUILD_KERNEL)/header.tmp
 
+$(BUILD_KERNEL)/main.o: $(KERNEL)/main.c
+	gcc -mcmodel=large -fno-builtin -m64 -c $< -o $@
+
+$(BUILD_KERNEL)/system: $(BUILD_KERNEL)/header.o \
+								 				$(BUILD_KERNEL)/main.o
+	ld -b elf64-x86-64 -o $@ $^ -T $(KERNEL)/kernel.lds
+
+$(BUILD_KERNEL)/kernel.bin: $(BUILD_KERNEL)/system
+	objcopy -I elf64-x86-64 -S -R ".eh_frame" -R ".comment" -O binary $< $@
+
 $(BUILD)/master.img: $(BUILD_BOOT)/boot.bin \
-										$(BUILD_BOOT)/loader.bin
+										 $(BUILD_BOOT)/loader.bin \
+										 $(BUILD_KERNEL)/kernel.bin
 	yes | bximage -q -hd=16 -func=create -sectsize=512 -imgmode=flat $@
 	dd if=$< of=$@ bs=512 count=1 conv=notrunc
 	python3 build.py $@ $^
 
 $(BUILD)/master-floppy.img: $(BUILD_BOOT)/boot.bin \
-														$(BUILD_BOOT)/loader.bin
+														$(BUILD_BOOT)/loader.bin \
+														$(BUILD_KERNEL)/kernel.bin
 	yes | bximage -q -fd=1.44M -func=create $@
 	dd if=$< of=$@ bs=512 count=1 conv=notrunc
 	python3 build.py $@ $^
