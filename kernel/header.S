@@ -56,6 +56,7 @@ entry64:
 .org 0x1000
 
 __PML4E:
+  // bit 0,1,2 is 1, read/write, not allow user-mode access
   .quad 0x102007
   .fill 255, 8, 0
   .quad 0x102007
@@ -64,16 +65,20 @@ __PML4E:
 .org 0x2000
 
 __PDPTE:
+  // bit 0,1 is 1, read/write
   .quad 0x103003
   .fill 511, 8, 0
 
 .org 0x3000
 __PDE:
+  // bit 0,1 is 1, read/write, bit 7 is 1, maps 2MB
+  // 0MB
   .quad 0x000083
   .quad 0x200083
   .quad 0x400083
   .quad 0x600083
   .quad 0x800083
+  // 10MB
   .quad 0xe0000083
   .quad 0xe0200083
   .quad 0xe0400083
@@ -82,6 +87,7 @@ __PDE:
   .quad 0xe0a00083
   .quad 0xe0c00083
   .quad 0xe0e00083
+  // 16MB
   .fill 499, 8, 0
 
 // GDT Table
@@ -92,7 +98,7 @@ __PDE:
 GDT_Table:
   .quad 0x0000000000000000 // 0 null descriptor 00
   .quad 0x0020980000000000 // 1 kernel code 64bit segment 08
-  .quad 0x0000920000000000 // 2 kernel code 64bit segment 10
+  .quad 0x0000920000000000 // 2 kernel data 64bit segment 10
   .quad 0x0020f80000000000 // 3 user code 64bit segment 18
   .quad 0x0000f20000000000 // 4 user data 64bit segment 20
   .quad 0x00cf9a000000ffff // 5 kernel code 32bit segment 28
