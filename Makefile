@@ -1,28 +1,38 @@
-BUILD:=./build
-BOCHS:=./bochs
-BOOT:=./boot
-KERNEL:=./kernel
+BUILD:=build
+BOCHS:=bochs
+BOOT:=boot
+KERNEL:=kernel
 
-$(BUILD)/boot.bin: $(BOOT)/boot.asm
-	$(shell mkdir -p $(dir $@))
+BUILD_BOOT:=$(BUILD)/$(BOOT)
+BUILD_KERNEL:=$(BUILD)/$(KERNEL)
+
+dummy_build_folder:=$(shell mkdir -p $(BUILD))
+dummy_boot_folder:=$(shell mkdir -p $(BUILD_BOOT))
+dummy_kernel_folder:=$(shell mkdir -p $(BUILD_KERNEL))
+
+$(BUILD_BOOT)/boot.bin: $(BOOT)/boot.asm
 	nasm -f bin $< -o $@
 
-$(BUILD)/loader.bin: $(BOOT)/loader.asm
-	$(shell mkdir -p $(dir $@))
+$(BUILD_BOOT)/loader.bin: $(BOOT)/loader.asm
 	nasm -f bin $< -o $@
 
-$(BUILD)/master.img: $(BUILD)/boot.bin \
-										$(BUILD)/loader.bin
+$(BUILD_KERNEL)/header.o: $(BUILD_KERNEL)/header.S
+	gcc -E $< > $(BUILD_KERNEL)/header.tmp
+	as --64 -o $@ $(BUILD_KERNEL)/header.tmp
+
+$(BUILD)/master.img: $(BUILD_BOOT)/boot.bin \
+										$(BUILD_BOOT)/loader.bin
 	yes | bximage -q -hd=16 -func=create -sectsize=512 -imgmode=flat $@
-	dd if=$(BUILD)/boot.bin of=$@ bs=512 count=1 conv=notrunc
+	dd if=$< of=$@ bs=512 count=1 conv=notrunc
+	python3 build.py $@ $^
 
-$(BUILD)/master-floppy.img: $(BUILD)/boot.bin \
-														$(BUILD)/loader.bin
+$(BUILD)/master-floppy.img: $(BUILD_BOOT)/boot.bin \
+														$(BUILD_BOOT)/loader.bin
 	yes | bximage -q -fd=1.44M -func=create $@
-	dd if=$(BUILD)/boot.bin of=$@ bs=512 count=1 conv=notrunc
+	dd if=$< of=$@ bs=512 count=1 conv=notrunc
+	python3 build.py $@ $^
 
-test: $(BUILD)/boot.bin \
-										$(BUILD)/loader.bin
+test: $(BUILD)/master-floppy.img
 
 clean:
 	rm -rf $(BUILD)
