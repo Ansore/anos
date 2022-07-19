@@ -47,8 +47,8 @@ void putchar(unsigned int *fb, int x_size, int x, int y, unsigned int fb_color,
 
 int skip_atoi(const char **s);
 
-static char *number(char *str, long num, int base, int size, int precision,
-                    int type);
+static char *number(char *str, long num, int base, int field_width, int precision,
+                    int flags);
 
 int vsprintf(char *buf, const char *fmt, va_list args);
 
