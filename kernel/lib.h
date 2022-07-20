@@ -8,7 +8,7 @@
  * @param str the point of string
  * @return string length
  */
-inline int strlen(char *str) {
+static inline int strlen(char *str) {
   register int __res;
   __asm__ __volatile__("cld \n\t"
                        "repne \n\t"
