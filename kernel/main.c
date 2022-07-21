@@ -1,6 +1,19 @@
+#include "printk.h"
+
+struct position pos;
+
 void start_kernel(void) {
   int *addr = (int *)0xffff800000a00000;
   int i;
+
+  pos.x_resolution = 1440;
+  pos.y_resolution = 900;
+  pos.x_position = 0;
+  pos.y_position = 0;
+  pos.x_char_size = 8;
+  pos.y_char_size = 16;
+  pos.fb_addr = (unsigned int *)0xffff800000a00000;
+  pos.fb_length = (pos.x_resolution * pos.y_resolution * 4);
 
   for (i = 0; i < 1440 * 20; i++) {
     *((char *)addr + 0) = (char)0x00;
@@ -30,6 +43,8 @@ void start_kernel(void) {
     *((char *)addr + 3) = (char)0x00;
     addr += 1;
   }
+  color_printk(YELLOW, BLACK, "Hello\t\t World!\n");
+  color_printk(GREEN, BLACK, "Hello %c World!\n", 'h');
   while (1) {
     ;
   }
