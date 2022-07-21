@@ -1,12 +1,12 @@
-#include "printk.h"
-#include "font.h"
-#include "lib.h"
 #include <stdarg.h>
+#include "printk.h"
+#include "lib.h"
+#include "font.h"
 
 // global variable
 // extern unsigned char font_ascii[256][16];
 char buf[4096] = {0};
-struct position pos;
+extern struct position pos;
 
 /**
  * convert numeric letters to integer values
@@ -19,6 +19,40 @@ int skip_atoi(const char **s) {
     i = i * 10 + *((*s)++) - '0';
   }
   return i;
+}
+
+/**
+ * print character of paramters required
+ * @param fb
+ * @param x_size
+ * @param x
+ * @param y
+ * @param fb_color
+ * @param bk_color
+ * @param font
+ * @return
+ */
+void putchar(unsigned int *fb, int x_size, int x, int y, unsigned int fb_color,
+             unsigned bk_color, unsigned char font) {
+  int i = 0, j = 0;
+  unsigned int *addr = NULL;
+  unsigned char *fontp = NULL;
+  fontp = font_ascii[font];
+  int testval;
+  for (i = 0; i < 16; i++) {
+    addr = fb + x_size * (y + i) + x;
+    testval = 0x100;
+    for (j = 0; j < 8; j++) {
+      testval = testval >> 1;
+      if (*fontp & testval) {
+        *addr = fb_color;
+      } else {
+        *addr = bk_color;
+      }
+      addr++;
+    }
+    fontp++;
+  }
 }
 
 /**
@@ -49,7 +83,64 @@ static char *number(char *str, long num, int base, int field_width,
   }
   c = (flags & ZEROPAD) ? '0' : ' ';
   sign = 0;
-  // TODO
+  if (flags & SIGN && num < 0) {
+    sign = '-';
+    num = -num;
+  } else {
+    sign = (flags & PLUS) ? '+' : ((flags & SPACE) ? ' ' : 0);
+  }
+  if (sign) {
+    field_width--;
+  }
+  if (flags & SPECIAL) {
+    if (base == 16) {
+      field_width -= 2;
+    } else if (base == 8) {
+      field_width--;
+    }
+  }
+  i = 0;
+  if (num == 0) {
+    tmp[i++] = '0';
+  } else {
+    while (num != 0) {
+      tmp[i++] = digits[do_div(num, base)];
+    }
+  }
+  if (i > precision) {
+    precision = i;
+  }
+  field_width -= precision;
+  if (!(flags & (ZEROPAD + LEFT))) {
+    while (field_width-- > 0) {
+      *str++ = ' ';
+    }
+  }
+  if (sign) {
+    *str++ = sign;
+  }
+  if (flags & SPECIAL) {
+    if (base == 8) {
+      *str++ = '0';
+    } else if (base == 16) {
+      *str++ = '0';
+      *str++ = digits[33];
+    }
+  }
+  if (!(flags & LEFT)) {
+    while (field_width-- > 0) {
+      *str++ = c;
+    }
+  }
+  while (i < precision--) {
+    *str++ = '0';
+  }
+  while (i-- > 0) {
+    *str++ = tmp[i];
+  }
+  while (field_width-- > 0) {
+    *str++ = ' ';
+  }
   return str;
 }
 
@@ -88,7 +179,7 @@ int vsprintf(char *buf, const char *fmt, va_list args) {
       flags |= SPACE;
       goto repeat;
     case '#':
-      flags |= SPACIAL;
+      flags |= SPECIAL;
       goto repeat;
     case '0':
       flags |= ZEROPAD;
@@ -218,7 +309,7 @@ int vsprintf(char *buf, const char *fmt, va_list args) {
       }
       break;
     // if appear %%, the first % as an escape character, after formatting, only
-    // one character %
+    // one character % */
     case '%':
       *str++ = '%';
       break;
