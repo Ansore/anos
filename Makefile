@@ -3,6 +3,9 @@ BOCHS:=bochs
 BOOT:=boot
 KERNEL:=kernel
 
+CFLGAS := -mcmodel=large -fno-builtin -m64 -fno-stack-protector
+ASFLGAS := -64
+
 BUILD_BOOT:=$(BUILD)/$(BOOT)
 BUILD_KERNEL:=$(BUILD)/$(KERNEL)
 
@@ -18,14 +21,18 @@ $(BUILD_BOOT)/loader.bin: $(BOOT)/loader.asm
 
 $(BUILD_KERNEL)/header.o: $(KERNEL)/header.S
 	gcc -E $< > $(BUILD_KERNEL)/header.tmp
-	as --64 -o $@ $(BUILD_KERNEL)/header.tmp
+	as $(ASFLGAS) -o $@ $(BUILD_KERNEL)/header.tmp
+
+$(BUILD_KERNEL)/printk.o: $(KERNEL)/printk.c
+	gcc $(CFLGAS) -c $^ -o $@
 
 $(BUILD_KERNEL)/main.o: $(KERNEL)/main.c
-	gcc -mcmodel=large -fno-builtin -m64 -c $< -o $@
+	gcc $(CFLGAS) -c $< -o $@
 
 $(BUILD_KERNEL)/system: $(BUILD_KERNEL)/header.o \
-								 				$(BUILD_KERNEL)/main.o
-	ld -b elf64-x86-64 -o $@ $^ -T $(KERNEL)/kernel.lds
+								 				$(BUILD_KERNEL)/main.o \
+												$(BUILD_KERNEL)/printk.o
+	ld -b elf64-x86-64 -z muldefs -o $@ $^ -T $(KERNEL)/kernel.lds
 
 $(BUILD_KERNEL)/kernel.bin: $(BUILD_KERNEL)/system
 	objcopy -I elf64-x86-64 -S -R ".eh_frame" -R ".comment" -O binary $< $@
