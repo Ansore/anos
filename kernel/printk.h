@@ -8,7 +8,7 @@
 #define PLUS 4     // show plus
 #define SPACE 8    // space if plus
 #define LEFT 16    // left justified
-#define SPACIAL 32 // 0x
+#define SPECIAL 32 // 0x
 #define SMALL 64   // use 'abcdef' instead of 'ABCDEF'
 
 #define is_digit(c) ((c) >= '0' && (c) <= '9')
@@ -16,6 +16,7 @@
   ({                                                                           \
     int __res;                                                                 \
     __asm__("divq %%rcx" : "=a"(n), "=d"(__res) : "0"(n), "1"(0), "c"(base));  \
+    __res;                                                                     \
   })
 
 #define WHITE 0x00ffffff  // white
@@ -47,8 +48,8 @@ void putchar(unsigned int *fb, int x_size, int x, int y, unsigned int fb_color,
 
 int skip_atoi(const char **s);
 
-static char *number(char *str, long num, int base, int field_width, int precision,
-                    int flags);
+static char *number(char *str, long num, int base, int field_width,
+                    int precision, int flags);
 
 int vsprintf(char *buf, const char *fmt, va_list args);
 
