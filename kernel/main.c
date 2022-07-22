@@ -44,7 +44,12 @@ void start_kernel(void) {
     addr += 1;
   }
   color_printk(YELLOW, BLACK, "Hello\t\t World!\n");
-  color_printk(GREEN, BLACK, "Hello %c World!\n", 'h');
+  color_printk(GREEN, BLACK, "addr test: %p\n", addr);
+  color_printk(GREEN, BLACK, "o test: %o\n", 10);
+  color_printk(GREEN, BLACK, "hex test: %x\n", 10);
+  color_printk(GREEN, BLACK, "integer test: %d\n", 10);
+  color_printk(GREEN, BLACK, "char test: %c\n", 'h');
+  color_printk(GREEN, BLACK, "string test: %s\n", "str");
   while (1) {
     ;
   }
