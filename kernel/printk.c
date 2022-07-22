@@ -206,7 +206,7 @@ int vsprintf(char *buf, const char *fmt, va_list args) {
         fmt++;
         field_width = va_arg(args, int);
       }
-      if (field_width < 0) {
+      if (precision < 0) {
         precision = 0;
       }
     }
@@ -276,7 +276,6 @@ int vsprintf(char *buf, const char *fmt, va_list args) {
       break;
     case 'x':
       flags |= SMALL;
-      break;
     case 'X':
       if (qualifier == 'l') {
         str = number(str, va_arg(args, unsigned long), 16, field_width,
@@ -289,7 +288,6 @@ int vsprintf(char *buf, const char *fmt, va_list args) {
     case 'd':
     case 'i':
       flags |= SIGN;
-      break;
     case 'u':
       if (qualifier == 'l') {
         str = number(str, va_arg(args, unsigned long), 10, field_width,
@@ -309,7 +307,7 @@ int vsprintf(char *buf, const char *fmt, va_list args) {
       }
       break;
     // if appear %%, the first % as an escape character, after formatting, only
-    // one character % */
+    // one character %
     case '%':
       *str++ = '%';
       break;
