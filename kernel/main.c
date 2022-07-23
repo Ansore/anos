@@ -43,6 +43,8 @@ void start_kernel(void) {
     *((char *)addr + 3) = (char)0x00;
     addr += 1;
   }
+
+  i = 1 / 0;
   color_printk(YELLOW, BLACK, "Hello\t\t World!\n");
   color_printk(GREEN, BLACK, "addr test: %p\n", addr);
   color_printk(GREEN, BLACK, "o test: %o\n", 10);
