@@ -23,13 +23,22 @@ $(BUILD_KERNEL)/header.o: $(KERNEL)/header.S
 	gcc -E $< > $(BUILD_KERNEL)/header.tmp
 	as $(ASFLGAS) -o $@ $(BUILD_KERNEL)/header.tmp
 
+$(BUILD_KERNEL)/entry.o: $(KERNEL)/entry.S
+	gcc -E $< > $(BUILD_KERNEL)/entry.tmp
+	as $(ASFLGAS) -o $@ $(BUILD_KERNEL)/entry.tmp
+
 $(BUILD_KERNEL)/printk.o: $(KERNEL)/printk.c
+	gcc $(CFLGAS) -c $^ -o $@
+
+$(BUILD_KERNEL)/trap.o: $(KERNEL)/trap.c
 	gcc $(CFLGAS) -c $^ -o $@
 
 $(BUILD_KERNEL)/main.o: $(KERNEL)/main.c
 	gcc $(CFLGAS) -c $< -o $@
 
 $(BUILD_KERNEL)/system: $(BUILD_KERNEL)/header.o \
+								 				$(BUILD_KERNEL)/trap.o \
+								 				$(BUILD_KERNEL)/entry.o \
 								 				$(BUILD_KERNEL)/main.o \
 												$(BUILD_KERNEL)/printk.o
 	ld -b elf64-x86-64 -z muldefs -o $@ $^ -T $(KERNEL)/kernel.lds
