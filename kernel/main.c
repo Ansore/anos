@@ -1,4 +1,6 @@
+#include "gate.h"
 #include "printk.h"
+#include "trap.h"
 
 struct position pos;
 
@@ -44,7 +46,15 @@ void start_kernel(void) {
     addr += 1;
   }
 
-  i = 1 / 0;
+  load_TR(8);
+  set_tss64(0xffff800000007c00, 0xffff800000007c00, 0xffff800000a00000,
+            0xffff800000007c00, 0xffff800000007c00, 0xffff800000007c00,
+            0xffff800000007c0, 0xffff800000007c00, 0xffff800000007c00,
+            0xffff800000007c00);
+  sys_vector_init();
+
+  // i = 1 / 0; // divide 0 exception
+  i = *(int*) 0xffff80000aa00000; // #PF exception
   color_printk(YELLOW, BLACK, "Hello\t\t World!\n");
   color_printk(GREEN, BLACK, "addr test: %p\n", addr);
   color_printk(GREEN, BLACK, "o test: %o\n", 10);
