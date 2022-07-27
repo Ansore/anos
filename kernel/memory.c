@@ -1,0 +1,31 @@
+#include "memory.h"
+#include "lib.h"
+#include "printk.h"
+
+void memory_init() {
+  int i, j;
+  unsigned long total_memory;
+  struct Memory_E820_Formate *p = NULL;
+
+  color_printk(BLUE, BLACK,
+               "Display Physics Adress MAP, Type(1:RAM,2:ROM or Reserved, "
+               "3:ACPI Reclaim Memory, 4:ACPI NVS Memory, Others:Undefine)\n");
+  p = (struct Memory_E820_Formate *)0xffff800000007e00;
+  for (i = 0; i < 32; i++) {
+    color_printk(ORANGE, BLACK,
+                 "Adress:%#010x, %08x\tLength:%#010x,%08x\tType:%010x\n",
+                 p->address2, p->address1, p->length2, p->length1, p->type);
+    unsigned long tmp = 0;
+    if (p->type == 1) {
+      tmp = p->length2;
+      total_memory += p->length1;
+      total_memory += tmp << 32;
+    }
+
+    p++;
+    if (p->type > 4) {
+      break;
+    }
+  }
+  color_printk(ORANGE, BLACK, "OS can used total ram: %018lx\n", total_memory);
+}

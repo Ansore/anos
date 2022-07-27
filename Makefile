@@ -33,12 +33,16 @@ $(BUILD_KERNEL)/printk.o: $(KERNEL)/printk.c
 $(BUILD_KERNEL)/trap.o: $(KERNEL)/trap.c
 	gcc $(CFLGAS) -c $^ -o $@
 
+$(BUILD_KERNEL)/memory.o: $(KERNEL)/memory.c
+	gcc $(CFLGAS) -c $^ -o $@
+
 $(BUILD_KERNEL)/main.o: $(KERNEL)/main.c
 	gcc $(CFLGAS) -c $< -o $@
 
 $(BUILD_KERNEL)/system: $(BUILD_KERNEL)/header.o \
 								 				$(BUILD_KERNEL)/trap.o \
 								 				$(BUILD_KERNEL)/entry.o \
+								 				$(BUILD_KERNEL)/memory.o \
 								 				$(BUILD_KERNEL)/main.o \
 												$(BUILD_KERNEL)/printk.o
 	ld -b elf64-x86-64 -z muldefs -o $@ $^ -T $(KERNEL)/kernel.lds
