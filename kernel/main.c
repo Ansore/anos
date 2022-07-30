@@ -4,6 +4,7 @@
 #include "trap.h"
 
 struct position pos;
+struct global_memory_descriptor memory_management_struct = {{0}, 0};
 
 void start_kernel(void) {
   int *addr = (int *)0xffff800000a00000;
