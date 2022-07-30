@@ -19,35 +19,6 @@ void start_kernel(void) {
   pos.fb_addr = (unsigned int *)0xffff800000a00000;
   pos.fb_length = (pos.x_resolution * pos.y_resolution * 4);
 
-  for (i = 0; i < 1440 * 20; i++) {
-    *((char *)addr + 0) = (char)0x00;
-    *((char *)addr + 1) = (char)0x00;
-    *((char *)addr + 2) = (char)0xff;
-    *((char *)addr + 3) = (char)0x00;
-    addr += 1;
-  }
-  for (i = 0; i < 1440 * 20; i++) {
-    *((char *)addr + 0) = (char)0x00;
-    *((char *)addr + 1) = (char)0xff;
-    *((char *)addr + 2) = (char)0x00;
-    *((char *)addr + 3) = (char)0x00;
-    addr += 1;
-  }
-  for (i = 0; i < 1440 * 20; i++) {
-    *((char *)addr + 0) = (char)0xff;
-    *((char *)addr + 1) = (char)0x00;
-    *((char *)addr + 2) = (char)0x00;
-    *((char *)addr + 3) = (char)0x00;
-    addr += 1;
-  }
-  for (i = 0; i < 1440 * 20; i++) {
-    *((char *)addr + 0) = (char)0xff;
-    *((char *)addr + 1) = (char)0xff;
-    *((char *)addr + 2) = (char)0xff;
-    *((char *)addr + 3) = (char)0x00;
-    addr += 1;
-  }
-
   load_TR(8);
   set_tss64(0xffff800000007c00, 0xffff800000007c00, 0xffff800000a00000,
             0xffff800000007c00, 0xffff800000007c00, 0xffff800000007c00,
