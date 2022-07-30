@@ -4,7 +4,7 @@
 
 void memory_init() {
   int i, j;
-  unsigned long total_memory;
+  unsigned long total_memory = 0;
   struct Memory_E820_Formate *p = NULL;
 
   color_printk(BLUE, BLACK,
