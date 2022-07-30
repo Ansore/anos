@@ -28,15 +28,6 @@ void start_kernel(void) {
 
   memory_init();
 
-  // i = 1 / 0; // divide 0 exception
-  // i = *(int*) 0xffff80000aa00000; // #PF exception
-  color_printk(YELLOW, BLACK, "Hello\t\t World!\n");
-  color_printk(GREEN, BLACK, "addr test: %p\n", addr);
-  color_printk(GREEN, BLACK, "o test: %o\n", 10);
-  color_printk(GREEN, BLACK, "hex test: %x\n", 10);
-  color_printk(GREEN, BLACK, "integer test: %d\n", 10);
-  color_printk(GREEN, BLACK, "char test: %c\n", 'h');
-  color_printk(GREEN, BLACK, "string test: %s\n", "str");
   while (1) {
     ;
   }
