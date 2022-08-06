@@ -35,6 +35,45 @@ struct E820 {
 struct global_memory_descriptor {
   struct E820 e820[32];
   unsigned long e820_length;
+
+  unsigned long *bits_map;
+  unsigned long bits_size;
+  unsigned long bits_length;
+
+  struct page *pages_struct;
+  unsigned long pages_size;
+  unsigned long pages_length;
+
+  struct zone *zones_struct;
+  unsigned long zones_size;
+  unsigned long zones_length;
+
+  unsigned long start_code, end_code, end_data, end_brk;
+
+  unsigned long end_of_struct;
+};
+
+struct zone {
+  struct page *pages_group;
+  unsigned long pages_length;
+  unsigned long zone_start_address;
+  unsigned long zone_end_address;
+  unsigned long zone_length;
+  unsigned long attribute;
+
+  struct global_memory_descriptor *gmd_struct;
+
+  unsigned long page_using_count;
+  unsigned long page_free_count;
+  unsigned long total_pages_link;
+};
+
+struct page {
+  struct zone *zone_struct;
+  unsigned long phy_address;
+  unsigned long attribute;
+  unsigned long reference_count;
+  unsigned long age;
 };
 
 extern struct global_memory_descriptor memory_management_struct;

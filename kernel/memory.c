@@ -50,4 +50,39 @@ void memory_init() {
 
   color_printk(ORANGE, BLACK, "OS can used total 2M PAGEs: %#010x=%010d\n",
                total_memory, total_memory);
+  total_memory =
+      memory_management_struct.e820[memory_management_struct.e820_length]
+          .address +
+      memory_management_struct.e820[memory_management_struct.e820_length]
+          .length;
+
+  // bits map construction init
+  memory_management_struct.bits_map =
+      (unsigned long *)((memory_management_struct.end_brk + PAGE_4K_SIZE - 1) &
+                        PAGE_4K_MASK);
+
+  memory_management_struct.bits_size = total_memory >> PAGE_2M_SHIFT;
+
+  memory_management_struct.bits_length =
+      (((unsigned long)(total_memory >> PAGE_2M_SHIFT) + sizeof(long) * 8 - 1) /
+       8) &
+      (~(sizeof(long) - 1));
+
+  // init bits memory map
+  memset(memory_management_struct.pages_struct, 0x00,
+         memory_management_struct.pages_length);
+
+  // zones construction init
+  memory_management_struct.zones_struct =
+      (struct zone *)(((unsigned long)memory_management_struct.pages_struct +
+                       memory_management_struct.pages_length + PAGE_4K_SIZE -
+                       1) &
+                      PAGE_4K_MASK);
+
+  memory_management_struct.zones_size = 0;
+  memory_management_struct.zones_length =
+      (5 * sizeof(struct zone) + sizeof(long) - 1) & (~(sizeof(long) - 1));
+
+  memset(memory_management_struct.zones_struct, 0x00,
+         memory_management_struct.zones_length);
 }
