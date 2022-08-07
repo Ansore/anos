@@ -2,6 +2,7 @@
 #define __MEMORY_H__
 
 // 8 bytes per cell
+#include "lib.h"
 #define PTRS_PER_PAGE 512
 
 #define PAGE_OFFSET ((unsigned long)0xffff800000000000)
@@ -25,6 +26,23 @@
 #define VIRT_TO_PHY(addr) ((unsigned long)(addr)-PAGE_OFFSET)
 #define PHY_TO_VIRT(addr)                                                      \
   ((unsigned long *)((unsigned long)(addr) + PAGE_OFFSET))
+
+#define ZONE_DMA (1 << 0)
+#define ZONE_NOMAL (1 << 1)
+#define ZONE_UNMAPED (1 << 2)
+
+#define PG_PTABLE_MAPED (1 << 0)
+#define PG_KERNEL_INIT (1 << 1)
+#define PG_REFRENCED (1 << 2)
+#define PG_DIRTY (1 << 3)
+#define PG_ACTIVE (1 << 4)
+#define PG_UP_TO_DATE (1 << 5)
+#define PG_DEVICE (1 << 6)
+#define PG_KERNEL (1 << 7)
+#define PG_K_SHARE_TO_U (1 << 8)
+#define PG_SLAB (1 << 9)
+
+#define MAX_NR_ZONES 10 // max zone
 
 struct E820 {
   unsigned long address;
@@ -77,6 +95,32 @@ struct page {
 };
 
 extern struct global_memory_descriptor memory_management_struct;
+// each zone index
+
+int ZONE_DMA_INDEX = 0;
+int ZONE_NORMAL_INDEX = 0;  // low 1GB RAM ,was mapped in pagetable
+int ZONE_UNMAPED_INDEX = 0; // above 1GB RAM,unmapped in pagetable
+
+unsigned long *global_cr3 = NULL;
+
+#define FLUSH_TLB_ONE(addr)                                                    \
+  __asm__ __volatile__("invlpg (%0) \n\t" : : "r"(addr) : "memory");
+
+#define FLUSH_TLB()                                                            \
+  do {                                                                         \
+    unsigned long tmpreg;                                                      \
+    __asm__ __volatile__("movq %%cr3, %0 \n\t"                                 \
+                         "movq %0, %%cr3 \n\t"                                 \
+                         : "=r"(tmpreg)                                        \
+                         :                                                     \
+                         : "memory");                                          \
+  } while (0)
+
+static inline unsigned long *get_gdt() {
+  unsigned long *tmp;
+  __asm__ __volatile__("movq %%cr3, %0 \n\t" : "=r"(tmp) : : "memory");
+  return tmp;
+}
 
 void memory_init();
 
