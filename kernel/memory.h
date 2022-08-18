@@ -123,5 +123,6 @@ static inline unsigned long *get_gdt() {
 }
 
 void memory_init();
+struct page *alloc_pages(int zone_select, int number, unsigned long page_flags);
 
 #endif // !__MEMORY_H__
