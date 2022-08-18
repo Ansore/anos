@@ -6,7 +6,7 @@ unsigned long page_init(struct page *page, unsigned long flags) {
   if (!page->attribute) {
     *(memory_management_struct.bits_map +
       ((page->phy_address >> PAGE_2M_SHIFT) >> 6)) |=
-        (page->phy_address >> PAGE_2M_SHIFT) % 64;
+        1UL << (page->phy_address >> PAGE_2M_SHIFT) % 64;
     page->attribute = flags;
     page->reference_count++;
     page->zone_struct->page_using_count++;
@@ -22,6 +22,7 @@ unsigned long page_init(struct page *page, unsigned long flags) {
     *(memory_management_struct.bits_map +
       ((page->phy_address >> PAGE_2M_SHIFT) >> 6)) |=
         1UL << (page->phy_address >> PAGE_2M_SHIFT) % 64;
+    page->attribute |= flags;
   }
   return 0;
 }
