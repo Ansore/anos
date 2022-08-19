@@ -5,6 +5,7 @@
 - gnu C
 - python3
 - bochs
+- nasm
 
 first, you need to install `pyfatfs` for package images of `fat12` filesystem
 
