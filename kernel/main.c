@@ -1,4 +1,5 @@
 #include "gate.h"
+#include "interrupt.h"
 #include "memory.h"
 #include "printk.h"
 #include "trap.h"
@@ -38,8 +39,13 @@ void start_kernel(void) {
   memory_management_struct.end_data = (unsigned long)&_edata;
   memory_management_struct.end_brk = (unsigned long)&_end;
 
+  color_printk(RED, BLACK, "memory init");
   memory_init();
 
+  color_printk(RED, BLACK, "interrupt init");
+  interrupt_init();
+
+  /*
   color_printk(RED, BLACK, "memory_management_struct.bits_map:%#018lx\n",
                *memory_management_struct.bits_map);
   color_printk(RED, BLACK, "memory_management_struct.bits_map:%#018lx\n",
@@ -59,6 +65,7 @@ void start_kernel(void) {
                *memory_management_struct.bits_map);
   color_printk(RED, BLACK, "memory_management_struct.bits_map:%#018lx\n",
                *(memory_management_struct.bits_map + 1));
+  */
 
   while (1) {
     ;

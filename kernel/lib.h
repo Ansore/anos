@@ -3,6 +3,11 @@
 
 #define NULL 0
 
+#define sti() __asm__ __volatile__("sti \n\t" ::: "memory")
+#define cli() __asm__ __volatile__("cli \n\t" ::: "memory")
+#define nop() __asm__ __volatile__("nop \n\t")
+#define io_mfence() __asm__ __volatile__("mfence \n\t" ::: "memory")
+
 /**
  * get string length
  * @param str the point of string
@@ -40,6 +45,42 @@ static inline void *memset(void *address, unsigned char c, long count) {
                        : "a"(tmp), "q"(count), "0"(count / 8), "1"(address)
                        : "memory");
   return address;
+}
+
+static inline unsigned int io_in8(unsigned short port) {
+  unsigned char ret = 0;
+  __asm__ __volatile__("inb %%dx, %0 \n\t"
+                       "mfence \n\t"
+                       : "=a"(ret)
+                       : "d"(port)
+                       : "memory");
+  return ret;
+}
+
+static inline unsigned int io_in32(unsigned short port) {
+  unsigned int ret = 0;
+  __asm__ __volatile__("inl %%dx, %0 \n\t"
+                       "mfence \n\t"
+                       : "=a"(ret)
+                       : "d"(port)
+                       : "memory");
+  return ret;
+}
+
+static inline void io_out8(unsigned short port, unsigned char value) {
+  __asm__ __volatile__("outb %0, %%dx \n\t"
+                       "mfence \n\t"
+                       :
+                       : "a"(value), "d"(port)
+                       : "memory");
+}
+
+static inline void io_out32(unsigned short port, unsigned int value) {
+  __asm__ __volatile__("outl %0, %%dx \n\t"
+                       "mfence \n\t"
+                       :
+                       : "a"(value), "d"(port)
+                       : "memory");
 }
 
 #endif // !__LIB_H__
