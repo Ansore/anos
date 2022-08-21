@@ -1,6 +1,7 @@
+// #include "linkage.h"
 .section .text
 
-.globl _start
+.global _start
 
 _start:
   mov $0x10, %ax
@@ -41,7 +42,8 @@ entry64:
   movq %rax, %es
   movq %rax, %gs
   movq %rax, %ss
-  movq $0xffff800000007e00, %rsp
+  // movq $0xffff800000007e00, %rsp
+  movq _stack_start(%rip), %rsp
 
 setup_IDT:
   leaq ignore_int(%rip), %rdx
@@ -162,6 +164,10 @@ loop:
 
 int_msg:
   .asciz "unknown interrupt or fault at RIP\n"
+
+.global _stack_start
+_stack_start:
+   .quad init_task_union + 32768
 
 // init page
 .align 8
