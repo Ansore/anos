@@ -3,6 +3,7 @@
 #include "memory.h"
 #include "printk.h"
 #include "trap.h"
+#include "task.h"
 
 struct position pos;
 struct global_memory_descriptor memory_management_struct = {{0}, 0};
@@ -28,7 +29,7 @@ void start_kernel(void) {
                   PAGE_4K_MASK;
 
   load_TR(8);
-  set_tss64(0xffff800000007c00, 0xffff800000007c00, 0xffff800000a00000,
+  set_tss64(_stack_start, _stack_start, _stack_start,
             0xffff800000007c00, 0xffff800000007c00, 0xffff800000007c00,
             0xffff800000007c0, 0xffff800000007c00, 0xffff800000007c00,
             0xffff800000007c00);
@@ -44,6 +45,11 @@ void start_kernel(void) {
 
   color_printk(RED, BLACK, "interrupt init");
   interrupt_init();
+
+  // i = *(int*) 0x0000000000000000;
+
+  color_printk(RED,BLACK,"task_init \n");
+	task_init();
 
   /*
   color_printk(RED, BLACK, "memory_management_struct.bits_map:%#018lx\n",

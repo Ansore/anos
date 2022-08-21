@@ -36,6 +36,9 @@ $(BUILD_KERNEL)/trap.o: $(KERNEL)/trap.c
 $(BUILD_KERNEL)/interrupt.o: $(KERNEL)/interrupt.c
 	gcc $(CFLGAS) -c $^ -o $@
 
+$(BUILD_KERNEL)/task.o: $(KERNEL)/task.c
+	gcc $(CFLGAS) -c $^ -o $@
+
 $(BUILD_KERNEL)/memory.o: $(KERNEL)/memory.c
 	gcc $(CFLGAS) -c $^ -o $@
 
@@ -45,6 +48,7 @@ $(BUILD_KERNEL)/main.o: $(KERNEL)/main.c
 $(BUILD_KERNEL)/system: $(BUILD_KERNEL)/header.o \
 								 				$(BUILD_KERNEL)/trap.o \
 								 				$(BUILD_KERNEL)/interrupt.o \
+								 				$(BUILD_KERNEL)/task.o \
 								 				$(BUILD_KERNEL)/entry.o \
 								 				$(BUILD_KERNEL)/memory.o \
 								 				$(BUILD_KERNEL)/main.o \

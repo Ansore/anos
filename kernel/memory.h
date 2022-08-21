@@ -44,6 +44,70 @@
 
 #define MAX_NR_ZONES 10 // max zone
 
+// page table attribute
+
+// bit63 execution disable
+#define PAGE_XD (unsigned long)0x1000000000000000
+// bit12 page attribute table
+#define PAGE_PAT (unsigned long)0x1000
+// bit8 global page 1:global, 0:part
+#define PAGE_GLOBAL (unsigned long)0x100
+// bit7 page size  1:big page, 0:small page
+#define PAGE_PS (unsigned long)0x0080
+// bit6 dirty 1:dirty, 0:clean
+#define PAGE_DIRTY (unsigned long)0x0040
+// bit5 accessed 1:visited, 0:unvisited
+#define PAGE_ACCESSED (unsigned long)0x0020
+// bit4 page level cache disable
+#define PAGE_PCD (unsigned long)0x0010
+// bit3 page level write through
+#define PAGE_PWT (unsigned long)0x0008
+// bit2 user supervisor 1:user and supervisor, 0:supervisor
+#define PAGE_U_S (unsigned long)0x0004
+// bit1 read write 1:read and write, 0:read
+#define PAGE_R_W (unsigned long)0x0002
+// bit0 present 1:present, 0:no present
+#define PAGE_PRESENT (unsigned long)0x0001
+
+// 1,0
+#define PAGE_KERNEL_GDT (PAGE_R_W | PAGE_PRESENT)
+// 1,0
+#define PAGE_KERNEL_DIR (PAGE_R_W | PAGE_PRESENT)
+// 7,1,0
+#define PAGE_KERNEL_PAGE (PAGE_PS | PAGE_R_W | PAGE_PRESENT)
+// 2,1,0
+#define PAGE_USER_DIR (PAGE_U_S | PAGE_R_W | PAGE_PRESENT)
+// 7,2,1,0
+#define PAGE_USER_PAGE (PAGE_PS | PAGE_U_S | PAGE_R_W | PAGE_PRESENT)
+
+#define mk_mpl4t(addr, attr) ((unsigned long)(addr) | (unsigned long)(attr))
+#define set_mpl4t(mpl4tptr, mpl4tval) (*(mpl4tptr) = (mpl4tval))
+
+#define mk_pdpt(addr, attr) ((unsigned long)(addr) | (unsigned long)(attr))
+#define set_pdpt(pdptptr, pdptval) (*(pdptptr) = (pdptval))
+
+#define mk_pdt(addr, attr) ((unsigned long)(addr) | (unsigned long)(attr))
+#define set_pdt(pdtptr, pdtval) (*(pdtptr) = (pdtval))
+
+#define mk_pt(addr, attr) ((unsigned long)(addr) | (unsigned long)(attr))
+#define set_pt(ptptr, ptval) (*(ptptr) = (ptval))
+
+typedef struct {
+  unsigned long pmlt4;
+} pml4t_t;
+
+typedef struct {
+  unsigned long pdpt;
+} pdpt_t;
+
+typedef struct {
+  unsigned long pdt;
+} pdt_t;
+
+typedef struct {
+  unsigned long pt;
+} pt_t;
+
 struct E820 {
   unsigned long address;
   unsigned long length;
