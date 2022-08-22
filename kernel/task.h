@@ -156,19 +156,15 @@ static inline struct task_struct *get_current() {
 #define current get_current()
 
 #define GET_CURRENT                                                            \
-  "movq	%rsp,	%rbx	\n\t"                                                       \
-  "andq	$-32768,%rbx	\n\t"
+  "movq %rsp, %rbx \n\t"                                                       \
+  "andq $-32768,%rbx \n\t"
 
 #define switch_to(prev, next)                                                  \
   do {                                                                         \
-  color_printk(WHITE, BLACK, "1>thread->rsp0:%#018lx\n", \
-               prev->thread->rsp); \
-  color_printk(WHITE, BLACK, "2>thread->rsp0:%#018lx\n", \
-               next->thread->rsp); \
-    __asm__ __volatile__("pushq	%%rbp \n\t"                                    \
-                         "pushq	%%rax \n\t"                                    \
+    __asm__ __volatile__("pushq %%rbp \n\t"                                    \
+                         "pushq %%rax \n\t"                                    \
                          "movq %%rsp, %0 \n\t"                                 \
-                         "movq %2,	%%rsp \n\t"                                 \
+                         "movq %2, %%rsp \n\t"                                 \
                          "leaq 1f(%%rip), %%rax \n\t"                          \
                          "movq %%rax, %1 \n\t"                                 \
                          "pushq %3 \n\t"                                      \

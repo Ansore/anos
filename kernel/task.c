@@ -46,12 +46,6 @@ unsigned long do_fork(struct pt_regs *regs, unsigned long clone_flags,
   if (!(tsk->flags & PF_KTHREAD)) {
     thd->rip = regs->rip = (unsigned long)ret_from_intr;
   }
-  color_printk(WHITE, BLACK, "struct task_struct rsp0:%#018lx\n",
-               (unsigned long)thd->rsp0);
-  color_printk(WHITE, BLACK, "struct task_struct rsp:%#018lx\n",
-               (unsigned long)thd->rsp);
-  color_printk(WHITE, BLACK, "struct task_struct rip:%#018lx\n",
-               (unsigned long)thd->rip);
 
   tsk->state = TASK_RUNNING;
 
@@ -65,64 +59,32 @@ unsigned long do_exit(unsigned long code) {
 }
 
 extern void kernel_thread_func(void);
-__asm__("kernel_thread_func:	\n\t"
-        "	popq	%r15	\n\t"
-        "	popq	%r14	\n\t"
-        "	popq	%r13	\n\t"
-        "	popq	%r12	\n\t"
-        "	popq	%r11	\n\t"
-        "	popq	%r10	\n\t"
-        "	popq	%r9	\n\t"
-        "	popq	%r8	\n\t"
-        "	popq	%rbx	\n\t"
-        "	popq	%rcx	\n\t"
-        "	popq	%rdx	\n\t"
-        "	popq	%rsi	\n\t"
-        "	popq	%rdi	\n\t"
-        "	popq	%rbp	\n\t"
-        "	popq	%rax	\n\t"
-        "	movq	%rax,	%ds	\n\t"
-        "	popq	%rax		\n\t"
-        "	movq	%rax,	%es	\n\t"
-        "	popq	%rax		\n\t"
-        "	addq	$0x38,	%rsp	\n\t"
+__asm__(".global kernel_thread_func; kernel_thread_func: \n\t"
+        " popq %r15 \n\t"
+        " popq %r14 \n\t"
+        " popq %r13 \n\t"
+        " popq %r12 \n\t"
+        " popq %r11 \n\t"
+        " popq %r10 \n\t"
+        " popq %r9 \n\t"
+        " popq %r8 \n\t"
+        " popq %rbx \n\t"
+        " popq %rcx \n\t"
+        " popq %rdx \n\t"
+        " popq %rsi \n\t"
+        " popq %rdi \n\t"
+        " popq %rbp \n\t"
+        " popq %rax \n\t"
+        " movq %rax, %ds \n\t"
+        " popq %rax  \n\t"
+        " movq %rax, %es \n\t"
+        " popq %rax  \n\t"
+        " addq $0x38, %rsp \n\t"
         /////////////////////////////////
-        "	movq	%rdx,	%rdi	\n\t"
-        "	callq	*%rbx		\n\t"
-        "	movq	%rax,	%rdi	\n\t"
-        "	callq	do_exit		\n\t");
-
-// void kernel_thread_func() {
-//   unsigned long rbx = 0;
-//   __asm__ __volatile__("movq %%rbx, %0" : "=r"(rbx)::"memory");
-//   color_printk(ORANGE, BLACK, "1 ,rbx:%#018lx\n", rbx);
-//   __asm__("	popq	%r15	\n\t"
-//           "	popq	%r14	\n\t"
-//           "	popq	%r13	\n\t"
-//           "	popq	%r12	\n\t"
-//           "	popq	%r11	\n\t"
-//           "	popq	%r10	\n\t"
-//           "	popq	%r9	\n\t"
-//           "	popq	%r8	\n\t"
-//           "	popq	%rbx	\n\t"
-//           "	popq	%rcx	\n\t"
-//           "	popq	%rdx	\n\t"
-//           "	popq	%rsi	\n\t"
-//           "	popq	%rdi	\n\t"
-//           "	popq	%rbp	\n\t"
-//           "	popq	%rax	\n\t"
-//           "	movq	%rax,	%ds	\n\t"
-//           "	popq	%rax		\n\t"
-//           "	movq	%rax,	%es	\n\t"
-//           "	popq	%rax		\n\t"
-//           "	addq	$0x38,	%rsp	\n\t"
-//           /////////////////////////////////
-//           "	movq	%rdx,	%rdi	\n\t"
-//           "	callq	*%rbx		\n\t"
-//           "	movq	%rax,	%rdi	\n\t"
-//           "	callq	do_exit		\n\t");
-//   color_printk(ORANGE, BLACK, "2 ,ar\n");
-// }
+        " movq %rdx, %rdi \n\t"
+        " callq *%rbx  \n\t"
+        " movq %rax, %rdi \n\t"
+        " callq do_exit  \n\t");
 
 int kernel_thread(unsigned long (*fn)(unsigned long), unsigned long arg,
                   unsigned long flags) {
@@ -151,11 +113,11 @@ void __switch_to(struct task_struct *prev, struct task_struct *next) {
             init_tss[0].ist4, init_tss[0].ist5, init_tss[0].ist6,
             init_tss[0].ist7);
 
-  __asm__ __volatile__("movq	%%fs,	%0 \n\t" : "=a"(prev->thread->fs));
-  __asm__ __volatile__("movq	%%gs,	%0 \n\t" : "=a"(prev->thread->gs));
+  __asm__ __volatile__("movq %%fs, %0 \n\t" : "=a"(prev->thread->fs));
+  __asm__ __volatile__("movq %%gs, %0 \n\t" : "=a"(prev->thread->gs));
 
-  __asm__ __volatile__("movq	%0,	%%fs \n\t" ::"a"(next->thread->fs));
-  __asm__ __volatile__("movq	%0,	%%gs \n\t" ::"a"(next->thread->gs));
+  __asm__ __volatile__("movq %0, %%fs \n\t" ::"a"(next->thread->fs));
+  __asm__ __volatile__("movq %0, %%gs \n\t" ::"a"(next->thread->gs));
 
   color_printk(WHITE, BLACK, "prev->thread->rsp0:%#018lx\n",
                prev->thread->rsp0);
@@ -182,7 +144,7 @@ void task_init() {
 
   init_mm.start_stack = _stack_start;
 
-  //	init_thread,init_tss
+  // init_thread,init_tss
   set_tss64(init_thread.rsp0, init_tss[0].rsp1, init_tss[0].rsp2,
             init_tss[0].ist1, init_tss[0].ist2, init_tss[0].ist3,
             init_tss[0].ist4, init_tss[0].ist5, init_tss[0].ist6,
