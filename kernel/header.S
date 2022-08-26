@@ -83,9 +83,9 @@ setup_TSS64:
   addq %rcx, %rax
   addq $103, %rax
   leaq GDT_Table(%rip), %rdi
-  movq %rax, 64(%rdi)
+  movq %rax, 80(%rdi) // tss segment offset
   shrq $32, %rdx
-  movq %rdx, 72(%rdi)
+  movq %rdx, 88(%rdi) // tss+1 segment offset
 
   // mov $0x40, %ax
   // ltr %ax
@@ -184,27 +184,27 @@ __PML4E:
 
 __PDPTE:
   // bit 0,1 is 1, read/write
-  .quad 0x103003
+  .quad 0x103007 // 0x103003
   .fill 511, 8, 0
 
 .org 0x3000
 __PDE:
   // bit 0,1 is 1, read/write, bit 7 is 1, maps 2MB
   // 0MB
-  .quad 0x000083
-  .quad 0x200083
-  .quad 0x400083
-  .quad 0x600083
-  .quad 0x800083
+  .quad 0x000087
+  .quad 0x200087
+  .quad 0x400087
+  .quad 0x600087
+  .quad 0x800087    // 0x800083
   // 10MB
-  .quad 0xe0000083
-  .quad 0xe0200083
-  .quad 0xe0400083
-  .quad 0xe0600083
-  .quad 0xe0800083
-  .quad 0xe0a00083
-  .quad 0xe0c00083
-  .quad 0xe0e00083
+  .quad 0xe0000087 // 0xa00000
+  .quad 0xe0200087
+  .quad 0xe0400087
+  .quad 0xe0600087
+  .quad 0xe0800087
+  .quad 0xe0a00087
+  .quad 0xe0c00087
+  .quad 0xe0e00087
   // 16MB
   .fill 499, 8, 0
 
@@ -217,11 +217,13 @@ GDT_Table:
   .quad 0x0000000000000000 // 0 null descriptor 00
   .quad 0x0020980000000000 // 1 kernel code 64bit segment 08
   .quad 0x0000920000000000 // 2 kernel data 64bit segment 10
-  .quad 0x0020f80000000000 // 3 user code 64bit segment 18
-  .quad 0x0000f20000000000 // 4 user data 64bit segment 20
-  .quad 0x00cf9a000000ffff // 5 kernel code 32bit segment 28
-  .quad 0x00cf92000000ffff // 6 kernel data 32bit segment 30
-  .fill 10, 8, 0 // 8~9 TSS(jmp one segment 7) in long-mode 128bit
+  .quad 0x0000000000000000 // 3 user data 32bit segment 18
+  .quad 0x0000000000000000 // 4 user data 32bit segment 20
+  .quad 0x0020f80000000000 // 5 user code 64bit segment 28
+  .quad 0x0000f20000000000 // 6 user data 64bit segment 30
+  .quad 0x00cf9a000000ffff // 7 kernel code 32bit segment 38
+  .quad 0x00cf92000000ffff // 8 kernel data 32bit segment 40
+  .fill 10, 8, 0 // 10~11 TSS(jmp one segment 9) in long-mode 128bit 50
 GDT_END:
 
 GDT_POINTER:
