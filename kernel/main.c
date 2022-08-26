@@ -28,10 +28,10 @@ void start_kernel(void) {
   pos.fb_length = (pos.x_resolution * pos.y_resolution * 4 + PAGE_4K_SIZE - 1) &
                   PAGE_4K_MASK;
 
-  load_TR(8);
+  load_TR(10);
   set_tss64(_stack_start, _stack_start, _stack_start,
             0xffff800000007c00, 0xffff800000007c00, 0xffff800000007c00,
-            0xffff800000007c0, 0xffff800000007c00, 0xffff800000007c00,
+            0xffff800000007c00, 0xffff800000007c00, 0xffff800000007c00,
             0xffff800000007c00);
   sys_vector_init();
 

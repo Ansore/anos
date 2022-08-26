@@ -4,10 +4,54 @@
 #include "memory.h"
 #include "printk.h"
 
+// typedef int (*fun)(unsigned int, unsigned int, const char *, ...);
+
+void user_level_function() {
+  // fun f = (void *)0xffff80000010a1b9;
+  // char msg[] = "user_level_function task is running...\n";
+  // f(RED, BLACK, msg);
+  // unsigned long m = (unsigned long) color_printk;
+  // __asm__("mov %0, %%rax"::"m"(m):);
+  // color_printk(RED, BLACK, "user_level_function task is running...\n");
+  while (1)
+    ;
+}
+
+unsigned long do_execve(struct pt_regs *regs) {
+  regs->rdx = 0x800000; // RIP
+  // regs->rdx = (unsigned long) user_level_function; // RIP
+  regs->rcx = 0xa00000; // RSP
+  regs->rax = 1;
+  regs->ds = 0;
+  regs->es = 0;
+
+  color_printk(RED, BLACK, "do_execve task is running...\n");
+  color_printk(RED, BLACK, "do_execve address %#018lx...\n",
+               user_level_function);
+  color_printk(RED, BLACK, "do_execve address2 %#018lx...\n", color_printk);
+
+  memcpy(user_level_function, (void *)0x800000, 1024);
+
+  return 0;
+}
+
 unsigned long init(unsigned long arg) {
+  struct pt_regs *regs;
   color_printk(RED, BLACK, "init task is running, arg:%#018lx\n", arg);
+
+  current->thread->rip = (unsigned long)ret_system_call;
+  current->thread->rsp =
+      (unsigned long)current + STACK_SIZE - sizeof(struct pt_regs);
+  regs = (struct pt_regs *)current->thread->rsp;
+
+  __asm__ __volatile__("movq %1, %%rsp \n\t"
+                       "pushq %2 \n\t"
+                       "jmp do_execve \n\t" ::"D"(regs),
+                       "m"(current->thread->rsp), "m"(current->thread->rip)
+                       : "memory");
   return 1;
 }
+
 unsigned long do_fork(struct pt_regs *regs, unsigned long clone_flags,
                       unsigned long stack_start, unsigned long stack_size) {
   struct task_struct *tsk = NULL;
@@ -44,7 +88,7 @@ unsigned long do_fork(struct pt_regs *regs, unsigned long clone_flags,
   thd->rsp = (unsigned long)tsk + STACK_SIZE - sizeof(struct pt_regs);
 
   if (!(tsk->flags & PF_KTHREAD)) {
-    thd->rip = regs->rip = (unsigned long)ret_from_intr;
+    thd->rip = regs->rip = (unsigned long)ret_system_call;
   }
 
   tsk->state = TASK_RUNNING;
@@ -143,6 +187,8 @@ void task_init() {
   init_mm.end_brk = memory_management_struct.end_brk;
 
   init_mm.start_stack = _stack_start;
+
+  wrmsr(0x174, KERNEL_CS);
 
   // init_thread,init_tss
   set_tss64(init_thread.rsp0, init_tss[0].rsp1, init_tss[0].rsp2,
