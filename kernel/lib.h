@@ -163,4 +163,10 @@ static inline void io_out32(unsigned short port, unsigned int value) {
                        : "memory");
 }
 
+static inline void wrmsr(unsigned long address, unsigned long value) {
+  __asm__ __volatile__("wrmsr \n\t" ::"d"(value >> 32), "a"(value & 0xffffffff),
+                       "c"(address)
+                       : "memory");
+}
+
 #endif // !__LIB_H__
