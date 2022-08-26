@@ -271,8 +271,8 @@ void memory_init() {
   color_printk(PURPLE, BLACK, "**global_cr3\t:%#018lx\n",
                *PHY_TO_VIRT(*PHY_TO_VIRT(global_cr3) & (~0xff)) & (~0xff));
 
-  for (i = 0; i < 10; i++)
-    *(PHY_TO_VIRT(global_cr3) + i) = 0UL;
+  // for (i = 0; i < 10; i++)
+  //   *(PHY_TO_VIRT(global_cr3) + i) = 0UL;
 
   FLUSH_TLB();
 }
