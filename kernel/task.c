@@ -4,15 +4,19 @@
 #include "memory.h"
 #include "printk.h"
 
-// typedef int (*fun)(unsigned int, unsigned int, const char *, ...);
+unsigned long system_call_function(struct pt_regs *regs) {
+  return system_call_table[regs->rax](regs);
+}
 
 void user_level_function() {
-  // fun f = (void *)0xffff80000010a1b9;
-  // char msg[] = "user_level_function task is running...\n";
-  // f(RED, BLACK, msg);
-  // unsigned long m = (unsigned long) color_printk;
-  // __asm__("mov %0, %%rax"::"m"(m):);
-  // color_printk(RED, BLACK, "user_level_function task is running...\n");
+  long ret = 0;
+  __asm__ __volatile__("leaq sysexit_return_address(%%rip), %%rdx \n\t"
+                       "movq %%rsp, %%rcx \n\t"
+                       "sysenter \n\t"
+                       "sysexit_return_address: \n\t"
+                       : "=a"(ret)
+                       : "0"(15)
+                       : "memory");
   while (1)
     ;
 }
@@ -189,6 +193,8 @@ void task_init() {
   init_mm.start_stack = _stack_start;
 
   wrmsr(0x174, KERNEL_CS);
+  wrmsr(0x175, current->thread->rsp0);
+  wrmsr(0x176, (unsigned long)system_call);
 
   // init_thread,init_tss
   set_tss64(init_thread.rsp0, init_tss[0].rsp1, init_tss[0].rsp2,

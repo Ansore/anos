@@ -5,6 +5,7 @@
 #include "lib.h"
 #include "memory.h"
 #include "ptrace.h"
+#include "printk.h"
 #define KERNEL_CS (0x08)
 #define KERNEL_DS (0x10)
 
@@ -20,6 +21,10 @@
 
 #define PF_KTHREAD (1 << 0)
 
+#define MAX_SYSTEM_CALL_NR 128
+
+typedef unsigned long (*system_call_t)(struct pt_regs *regs);
+
 extern char _text;
 extern char _etext;
 extern char _data;
@@ -34,6 +39,7 @@ extern unsigned long _stack_start;
 
 extern void ret_from_intr();
 extern void ret_system_call();
+extern void system_call();
 
 #define TASK_RUNNING (1 << 0)
 #define TASK_INTERRUPTIBLE (1 << 1)
@@ -168,7 +174,7 @@ static inline struct task_struct *get_current() {
                          "movq %2, %%rsp \n\t"                                 \
                          "leaq 1f(%%rip), %%rax \n\t"                          \
                          "movq %%rax, %1 \n\t"                                 \
-                         "pushq %3 \n\t"                                      \
+                         "pushq %3 \n\t"                                       \
                          "jmp __switch_to \n\t"                                \
                          "1: \n\t"                                             \
                          "popq %%rax \n\t"                                     \
@@ -178,6 +184,16 @@ static inline struct task_struct *get_current() {
                            "D"(prev), "S"(next)                                \
                          : "memory");                                          \
   } while (0)
+
+
+unsigned long no_system_call(struct pt_regs *regs) {
+  color_printk(RED, BLACK, "no_system_call is called, NR: %#04x\n", regs->rax);
+  return -1;
+}
+
+system_call_t system_call_table[MAX_SYSTEM_CALL_NR] = {
+  [0 ... MAX_SYSTEM_CALL_NR-1] = no_system_call
+};
 
 unsigned long do_fork(struct pt_regs *regs, unsigned long clone_flags,
                       unsigned long stack_start, unsigned long stack_size);
