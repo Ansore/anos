@@ -10,12 +10,13 @@ unsigned long system_call_function(struct pt_regs *regs) {
 
 void user_level_function() {
   long ret = 0;
+  char msg[] = "Hello World!\n";
   __asm__ __volatile__("leaq sysexit_return_address(%%rip), %%rdx \n\t"
                        "movq %%rsp, %%rcx \n\t"
                        "sysenter \n\t"
                        "sysexit_return_address: \n\t"
                        : "=a"(ret)
-                       : "0"(15)
+                       : "0"(1), "D"(msg)
                        : "memory");
   while (1)
     ;
